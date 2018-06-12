@@ -1,0 +1,7 @@
+*.wav
+Samples/*
+dataset/*
+output/*
+stat/*
+*.pyc
+.idea/*
