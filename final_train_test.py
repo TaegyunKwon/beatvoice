@@ -194,10 +194,23 @@ if __name__ == '__main__':
 
     from sklearn.metrics import classification_report, confusion_matrix
 
-    predictions = mlp.predict(test_X)
 
+    print("\n######################")
+    print("#### Train Result ####")
+    train_pred = mlp.predict(train_X)
+    print(confusion_matrix(train_Y, train_pred))
+    print(classification_report(train_Y, train_pred))
+
+    print("#### Valid Result ####")
+    valid_pred = mlp.predict(valid_X)
+    print(confusion_matrix(valid_Y, valid_pred))
+    print(classification_report(valid_Y, valid_pred))
+
+    print("#### Test Result ####")
+    predictions = mlp.predict(test_X)
     print(confusion_matrix(test_Y, predictions))
     print(classification_report(test_Y, predictions))
+    print("[10, 20, 10, 30]")
 
 
     #test_MLP = [[20,10],[30,20,20,30,30],[10, 20, 10, 30],[1000,1000,1000],[30,30,30],[30, 30, 30, 30, 30, 30]]
@@ -210,12 +223,23 @@ if __name__ == '__main__':
         mlp = MLPClassifier(hidden_layer_sizes=(MLPT))
         mlp.fit(train_X, train_Y)
 
-        predictions = mlp.predict(test_X)
+        print("\n######################")
+        print("#### Train Result ####")
+        train_pred = mlp.predict(train_X)
+        print(confusion_matrix(train_Y, train_pred))
+        print(classification_report(train_Y, train_pred))
 
-        print(confusion_matrix(test_Y, predictions))
-        print(classification_report(test_Y, predictions))
-        print (MLPT)
-        pp=classification_report(test_Y, predictions)
+        print("#### Valid Result ####")
+        valid_pred = mlp.predict(valid_X)
+        print(confusion_matrix(valid_Y, valid_pred))
+        print(classification_report(valid_Y, valid_pred))
+
+        print("#### Test Result ####")
+        test_pred = mlp.predict(test_X)
+        print(confusion_matrix(test_Y, test_pred))
+        print(classification_report(test_Y, test_pred))
+        print(MLPT)
+        pp=classification_report(test_Y, test_pred)
 
     filename = '{}_model.sav'.format(args.name)
     pickle.dump(mlp, open(filename, 'wb'))
