@@ -9,6 +9,10 @@ from final_feature import BeatFeature
 from final_train_test import normalize_features_object, normalize_features, mean_feature
 import argparse
 import constants
+import madmom
+
+VEL_MIN = 80
+VEL_MAX = 120
 
 
 def pick_onset(audio_file, onset_strength_th=4, onset_time_th=0.12):
@@ -37,6 +41,32 @@ def pick_onset(audio_file, onset_strength_th=4, onset_time_th=0.12):
       break
   return onset_post, y, sr
 
+def pick_onset_madmom(audio_file, onset_strenght_pre=8, onset_strenght_post=3):
+  y, sr = librosa.load(audio_file, 44100)
+  onset_samples = librosa.onset.onset_detect(y, sr, units='samples')
+  onset_strength = librosa.onset.onset_strength(y, sr)
+  onset_post = []
+  for el in onset_samples:
+    if onset_strength[el//512] >= onset_strenght_pre:
+      onset_post.append(el)
+
+  y_onset=y[onset_post[0]-3000:]
+
+  beat_est = madmom.features.onsets.RNNOnsetProcessor()(y_onset)
+
+  onset_post = []
+  ycut_onset_strength = librosa.onset.onset_strength(y_onset, sr)
+
+  beat_track_processor = madmom.features.beats.BeatTrackingProcessor(fps=100)
+  loc_beats = beat_track_processor(beat_est)
+  onset_temp=librosa.time_to_samples(loc_beats,sr)
+
+  for onset_temp_samples in onset_temp:
+      if ycut_onset_strength[onset_temp_samples // 512] >= onset_strenght_post:
+          onset_post.append(onset_temp_samples)
+  return onset_post, y_onset, sr
+
+
 
 def infer_to_midi(audio_file, model, scaler, out_name=None):
   onset_post, y, sr = pick_onset(audio_file)
@@ -56,17 +86,29 @@ def infer_to_midi(audio_file, model, scaler, out_name=None):
     el.full_feature = mean_feature(el.full_feature)
   normalize_features_object(features)
   # features = normalize_features_object(features)
+
+  rms = []
   for el in features:
+    rms.append(np.max(np.log(librosa.feature.rmse(el.y))))
+  max_rms = max(rms)
+  min_rms = min(rms)
+
+  for el in features:
+    rms = np.max(np.log(librosa.feature.rmse(el.y)))
+    rel_rms = abs((rms-min_rms)/(max_rms-min_rms))
+    print rel_rms
+    vel = int(rel_rms*45 + 80)
+
     feature = el.full_feature
     feature = scaler.transform(feature.reshape(1,-1))
     prediction = int(model.predict(feature))
 
     if prediction == 1:
-      inst.notes.append(pretty_midi.Note(80, 36, el.time, el.time+0.2))
+      inst.notes.append(pretty_midi.Note(vel, 36, el.time, el.time+0.2))
     elif prediction == 3:
-      inst.notes.append(pretty_midi.Note(80, 42, el.time, el.time + 0.2))
+      inst.notes.append(pretty_midi.Note(vel, 42, el.time, el.time + 0.2))
     elif prediction == 2:
-      inst.notes.append(pretty_midi.Note(80, 40, el.time, el.time + 0.2))
+      inst.notes.append(pretty_midi.Note(vel, 40, el.time, el.time + 0.2))
   if out_name is None:
     out_name = infer_file.replace('.wav', '.mid')
   midi.write(out_name)
@@ -85,7 +127,8 @@ if __name__ == '__main__':
   model = args.model
   scaler = args.scaler
 
-  onset_post, y, sr = pick_onset(infer_file)
+  # onset_post, y, sr = pick_onset(infer_file)
+  onset_post, y, sr = pick_onset_madmom(infer_file)
 
   model = pickle.load(open(model, 'rb'))
   scaler = joblib.load(scaler)

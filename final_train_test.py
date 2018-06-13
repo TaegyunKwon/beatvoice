@@ -15,7 +15,8 @@ from sklearn.neural_network import MLPClassifier
 import constants
 
 
-random.seed(634)
+RANDOM_SEED = 4
+random.seed(RANDOM_SEED)
 
 def mean_feature(feature):
     feature = np.reshape(np.mean(feature, axis=1),(-1,1))
@@ -191,10 +192,6 @@ if __name__ == '__main__':
     train_X, train_Y, valid_X, valid_Y, test_X, test_Y = make_dataset(data_unit=args.unit)
 
     print ("{}, Data Unit: {}".format(args.name, args.unit))
-    print (train_X.shape)
-    print (test_X.shape)
-    #train_X = train_X.T
-    #test_X = test_X.T
 
     scaler = StandardScaler()
     scaler.fit(train_X)
@@ -203,6 +200,7 @@ if __name__ == '__main__':
     joblib.dump(scaler, scaler_filename)
 
     train_X = scaler.transform(train_X)
+    valid_X = scaler.transform(valid_X)
     test_X = scaler.transform(test_X)
 
 
@@ -220,6 +218,7 @@ if __name__ == '__main__':
 
     print("#### Valid Result ####")
     valid_pred = mlp.predict(valid_X)
+    print valid_pred
     print(confusion_matrix(valid_Y, valid_pred))
     print(classification_report(valid_Y, valid_pred))
 
@@ -231,13 +230,13 @@ if __name__ == '__main__':
 
 
     #test_MLP = [[20,10],[30,20,20,30,30],[10, 20, 10, 30],[1000,1000,1000],[30,30,30],[30, 30, 30, 30, 30, 30]]
-    test_MLP = [[256,128,64]]
+    # test_MLP = [[256,128,64]]
 
-
+    test_MLP = [[256, 128, 64]]
 
 
     for MLPT in test_MLP:
-        mlp = MLPClassifier(hidden_layer_sizes=(MLPT))
+        mlp = MLPClassifier(hidden_layer_sizes=(MLPT), random_state=RANDOM_SEED, alpha=1e-3)
         mlp.fit(train_X, train_Y)
 
         print("\n######################")
