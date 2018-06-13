@@ -68,6 +68,7 @@ class BeatFeature(object):
       feature_list.append(self.features[key])
 
     full_feature = np.concatenate(feature_list, axis=0)
+    self.full_feature = full_feature
     return full_feature
 
 
