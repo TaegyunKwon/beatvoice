@@ -24,3 +24,5 @@ HOP = 512
 
 FEATURE_PATH = './dataset/features'
 BEAT_PATH = './output/'
+
+NORM_UNIT = "pattern"

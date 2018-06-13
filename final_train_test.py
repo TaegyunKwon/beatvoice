@@ -15,7 +15,6 @@ from sklearn.neural_network import MLPClassifier
 import constants
 
 
-NORM_UNIT = "pattern"
 random.seed(634)
 
 def mean_feature(feature):
@@ -90,7 +89,7 @@ def load_data_feature():
     return feature_list, pattern_list, id_list
 
 
-def make_dataset(data_unit=DATA_UNIT, train_ratio=0.6, valid_ratio=0.2, norm_unit=NORM_UNIT):
+def make_dataset(data_unit="ID", train_ratio=0.6, valid_ratio=0.2, norm_unit=constants.NORM_UNIT):
     feature_list, pattern_list, id_list = load_data_feature()
     for i, feature in enumerate(feature_list):
         feature_list[i] = (mean_feature(feature[0]),)+feature[1:]
@@ -167,10 +166,10 @@ def make_dataset(data_unit=DATA_UNIT, train_ratio=0.6, valid_ratio=0.2, norm_uni
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--name', default='test')
-    parser.add_argument('--unit', default='id')
+    parser.add_argument('--unit', default='ID')
     args = parser.parse_args()
 
-    train_X, train_Y, valid_X, valid_Y, test_X, test_Y = make_dataset()
+    train_X, train_Y, valid_X, valid_Y, test_X, test_Y = make_dataset(data_unit=args.unit)
 
     print ("{}, Data Unit: {}".format(args.name, args.unit))
     print (train_X.shape)
