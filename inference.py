@@ -121,6 +121,7 @@ if __name__ == '__main__':
   parser.add_argument('--scaler', default='stat/scaler.save')
   parser.add_argument('--model', default='test_model.sav')
   parser.add_argument('--output_file', default=None)
+  parser.add_argument('--mode', default='ensemble')
   args = parser.parse_args()
 
   infer_file = args.infer_file
