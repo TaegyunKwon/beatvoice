@@ -14,7 +14,6 @@ ddmfcc_path = 'ddmfcc'
 mel_path = 'mel'
 zcrsum_path = 'zcrsum'
 sc_mat_path = 'sc_mat'
-full_path = 'full'
 drum_types = ["kick", "snare", "hi"]
 
 
@@ -49,10 +48,10 @@ class BeatFeature(object):
 
   def get_spectral_centroid(self):
     sc_mat = librosa.feature.spectral_centroid(self.y, sr=self.sr)
-    self.features['spectral_centroid'] = sc_mat
+    self.features['centroid'] = sc_mat
     return sc_mat
 
-  def get_full_features(self, key_list=['mfcc', 'dmfcc', 'ddmfcc' 'mel', 'zero_crossing', 'centroid']):
+  def get_full_features(self, key_list=['mfcc', 'dmfcc', 'ddmfcc', 'mel', 'zero_crossing', 'centroid']):
     feature_list = []
     for key in key_list:
       try:
@@ -66,16 +65,15 @@ class BeatFeature(object):
           self.get_zero_crossing()
         elif key in ['centroid']:
           self.get_spectral_centroid()
-      else:
-        feature_list.append(self.features[key].value)
+      feature_list.append(self.features[key])
 
-    full_feature = np.concatenate([feature_list], axis=0)
+    full_feature = np.concatenate(feature_list, axis=0)
     return full_feature
 
 
-def save_feature(fn, path, feature):
+def save_feature(fn, feature):
     file_name = fn.replace('.wav', '.npy')
-    save_file = os.path.join(constants.FEATURE_PATH, path, file_name)
+    save_file = os.path.join(constants.FEATURE_PATH, file_name)
 
     if not os.path.exists(os.path.dirname(save_file)):
         os.makedirs(os.path.dirname(save_file))
@@ -128,4 +126,4 @@ if __name__ == '__main__':
 
           beat_feature = BeatFeature(None, y, sr)
           full_feature = beat_feature.get_full_features()
-          save_feature(drum_name + "_" + file_name, full_path, full_feature)
+          save_feature(drum_name + "_" + file_name, full_feature)

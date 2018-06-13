@@ -22,7 +22,7 @@ MEL_DIM = 40
 FFT_LEN = 2048
 HOP = 512
 
-FEATURE_PATH = './dataset/features'
+FEATURE_PATH = './dataset/features/full'
 BEAT_PATH = './output/'
 
 NORM_UNIT = "pattern"

@@ -7,6 +7,7 @@ from sklearn.externals import joblib
 import pretty_midi
 from final_feature import beat_feature
 import argparse
+from
 
 
 def pick_onset(audio_file, onset_strength_th=4, onset_time_th=0.12):
@@ -49,6 +50,8 @@ def infer_to_midi(audio_file, model, scaler):
   midi = pretty_midi.PrettyMIDI(initial_tempo=120)
   inst = pretty_midi.Instrument(program=119, is_drum=True, name='BeatVoice')
   midi.instruments.append(inst)
+
+
 
   mfcc_time = 'off'
   frame_n = 3
