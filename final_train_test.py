@@ -34,6 +34,23 @@ def normalize_features(features):
     for feature in features:
         feature[-1,:]=(feature[-1,:]-mean[-1])/(std[-1]+np.finfo(np.float32).eps)
 
+
+def normalize_features_object(features):
+    means = []
+    stds = []
+    for el in features:
+        feature = el.full_feature
+        temp_mean = feature.mean(1)
+        temp_std = feature.std(1)
+        means.append(temp_mean)
+        stds.append(temp_std)
+    mean = np.mean(means, axis=0)
+    std = np.std(stds, axis=0)
+    for n in range(len(features)):
+        feature = features[n].full_feature
+        features[n].full_feature[-1, :] = (feature[-1, :] - mean[-1]) / (std[-1] + np.finfo(np.float32).eps)
+    return features
+
 def gather_features(feature_list, option="pattern"): #option: ID, pattern
     fidx_dict = {} 
     for fidx in range(len(feature_list)):
