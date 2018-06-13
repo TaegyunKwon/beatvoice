@@ -13,9 +13,10 @@ from sklearn.externals import joblib
 import argparse
 from sklearn.neural_network import MLPClassifier
 import constants
+from sklearn.metrics import classification_report, confusion_matrix
 
 
-random.seed(634)
+random.seed(1233)
 
 def mean_feature(feature):
     feature = np.reshape(np.mean(feature, axis=1),(-1,1))
@@ -170,16 +171,13 @@ def make_dataset(data_unit="ID", train_ratio=0.6, valid_ratio=0.2, norm_unit=con
             n_total * (train_ratio + valid_ratio))])
         test_X, test_Y = select_id_sample(feature_list,
                                                id_list[int(n_total * (train_ratio + valid_ratio)):])
-    train_X = np.asarray(train_X)
+    train_X = np.asarray(train_X+valid_X)
     train_X = np.squeeze(train_X,axis=2)
-    train_Y = np.asarray(train_Y)
-    valid_X = np.asarray(valid_X)
-    valid_X = np.squeeze(valid_X,axis=2)
-    valid_Y = np.asarray(valid_Y)
+    train_Y = np.asarray(train_Y+valid_Y)
     test_X = np.asarray(test_X)
     test_X = np.squeeze(test_X,axis=2)
     test_Y = np.asarray(test_Y)
-    return train_X, train_Y, valid_X, valid_Y, test_X, test_Y
+    return train_X, train_Y, test_X, test_Y
 
 
 if __name__ == '__main__':
@@ -188,7 +186,7 @@ if __name__ == '__main__':
     parser.add_argument('--unit', default='ID')
     args = parser.parse_args()
 
-    train_X, train_Y, valid_X, valid_Y, test_X, test_Y = make_dataset(data_unit=args.unit)
+    train_X, train_Y, test_X, test_Y = make_dataset(data_unit=args.unit)
 
     print ("{}, Data Unit: {}".format(args.name, args.unit))
     print (train_X.shape)
@@ -206,35 +204,8 @@ if __name__ == '__main__':
     test_X = scaler.transform(test_X)
 
 
-    mlp = MLPClassifier(hidden_layer_sizes=(10, 20, 10, 30))
-    mlp.fit(train_X, train_Y)
-
-    from sklearn.metrics import classification_report, confusion_matrix
-
-
-    print("\n######################")
-    print("#### Train Result ####")
-    train_pred = mlp.predict(train_X)
-    print(confusion_matrix(train_Y, train_pred))
-    print(classification_report(train_Y, train_pred))
-
-    print("#### Valid Result ####")
-    valid_pred = mlp.predict(valid_X)
-    print(confusion_matrix(valid_Y, valid_pred))
-    print(classification_report(valid_Y, valid_pred))
-
-    print("#### Test Result ####")
-    predictions = mlp.predict(test_X)
-    print(confusion_matrix(test_Y, predictions))
-    print(classification_report(test_Y, predictions))
-    print("[10, 20, 10, 30]")
-
-
     #test_MLP = [[20,10],[30,20,20,30,30],[10, 20, 10, 30],[1000,1000,1000],[30,30,30],[30, 30, 30, 30, 30, 30]]
-    test_MLP = [[256,128,64]]
-
-
-
+    test_MLP = [[10,20,10,30],[256,128,64]]
 
     for MLPT in test_MLP:
         mlp = MLPClassifier(hidden_layer_sizes=(MLPT))
@@ -245,11 +216,6 @@ if __name__ == '__main__':
         train_pred = mlp.predict(train_X)
         print(confusion_matrix(train_Y, train_pred))
         print(classification_report(train_Y, train_pred))
-
-        print("#### Valid Result ####")
-        valid_pred = mlp.predict(valid_X)
-        print(confusion_matrix(valid_Y, valid_pred))
-        print(classification_report(valid_Y, valid_pred))
 
         print("#### Test Result ####")
         test_pred = mlp.predict(test_X)
