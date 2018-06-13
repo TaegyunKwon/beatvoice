@@ -15,14 +15,7 @@ from sklearn.neural_network import MLPClassifier
 import constants
 
 
-<<<<<<< HEAD
-FEATURE_PATH = './dataset/features/full'
-SHUFFLE = True
-DATA_UNIT = "ID"  # Unit of the data: subject, note are available.
 NORM_UNIT = "pattern"
-
-=======
->>>>>>> refs/remotes/origin/master
 random.seed(634)
 
 def mean_feature(feature):
@@ -97,11 +90,7 @@ def load_data_feature():
     return feature_list, pattern_list, id_list
 
 
-<<<<<<< HEAD
 def make_dataset(data_unit=DATA_UNIT, train_ratio=0.6, valid_ratio=0.2, norm_unit=NORM_UNIT):
-=======
-def make_dataset(data_unit='ID', train_ratio=0.6, valid_ratio=0.2):
->>>>>>> refs/remotes/origin/master
     feature_list, pattern_list, id_list = load_data_feature()
     for i, feature in enumerate(feature_list):
         feature_list[i] = (mean_feature(feature[0]),)+feature[1:]
@@ -163,7 +152,6 @@ def make_dataset(data_unit='ID', train_ratio=0.6, valid_ratio=0.2):
             n_total * (train_ratio + valid_ratio))])
         test_X, test_Y = select_id_sample(feature_list,
                                                id_list[int(n_total * (train_ratio + valid_ratio)):])
-<<<<<<< HEAD
     train_X = np.asarray(train_X)
     train_X = np.squeeze(train_X,axis=2)
     train_Y = np.asarray(train_Y)
@@ -173,8 +161,6 @@ def make_dataset(data_unit='ID', train_ratio=0.6, valid_ratio=0.2):
     test_X = np.asarray(test_X)
     test_X = np.squeeze(test_X,axis=2)
     test_Y = np.asarray(test_Y)
-=======
->>>>>>> refs/remotes/origin/master
     return train_X, train_Y, valid_X, valid_Y, test_X, test_Y
 
 
@@ -186,15 +172,7 @@ if __name__ == '__main__':
 
     train_X, train_Y, valid_X, valid_Y, test_X, test_Y = make_dataset()
 
-<<<<<<< HEAD
-    #####################
-    from sklearn.preprocessing import StandardScaler
-
-
-    print ("Shuffle: "+str(SHUFFLE)+"\t\t Data Unit: "+DATA_UNIT)
-=======
     print ("{}, Data Unit: {}".format(args.name, args.unit))
->>>>>>> refs/remotes/origin/master
     print (train_X.shape)
     print (test_X.shape)
     #train_X = train_X.T
