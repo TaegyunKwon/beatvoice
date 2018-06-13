@@ -77,6 +77,8 @@ def load_data_feature():
     pattern_list = []
     id_list = []
     for el in file_list:
+        if not el.endswith("npy"):
+            continue
         id, label, beat_id, pattern_id = parse_name(el)
         feature_data = np.load(os.path.join(constants.FEATURE_PATH, el))
         feature_list.append((feature_data, id, label, beat_id, pattern_id))
