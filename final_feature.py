@@ -47,7 +47,7 @@ class BeatFeature(object):
     return zero_crossing
 
   def get_spectral_centroid(self):
-    sc_mat = librosa.feature.spectral_centroid(self.y, sr=self.sr)
+    sc_mat = librosa.feature.spectral_centroid(self.y, sr=self.sr, hop_length=constants.HOP)
     self.features['centroid'] = sc_mat
     return sc_mat
 
