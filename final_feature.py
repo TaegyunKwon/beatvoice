@@ -39,7 +39,11 @@ class BeatFeature(object):
     return mel
 
   def get_zero_crossing(self):
-    zero_crossing = extract_zero_crossing(self,y, self.sr, self.mfcc.shape[1])
+    try:
+      zero_crossing = extract_zero_crossing(self.y, self.sr, self.features['mfcc'].shape[1])
+    except:
+      self.get_mfcc()
+      zero_crossing = extract_zero_crossing(self.y, self.sr, self.features['mfcc'].shape[1])
     self.features['zero_crossing'] = zero_crossing
     return zero_crossing
 
@@ -82,7 +86,7 @@ def extract_mfcc(y, sr):
   mel = librosa.power_to_db(librosa.feature.melspectrogram(y=y, sr=sr,
                                                          n_fft=constants.FFT_LEN,
                                                          hop_length=constants.HOP,
-                                                         win_length=constants.FFT_LEN))
+                                                         ))
   mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=constants.MFCC_DIM, S=mel)
   dmfcc = librosa.feature.delta(mfcc)
   ddmfcc = librosa.feature.delta(mfcc, order=2)
