@@ -18,34 +18,55 @@ full_path = 'full'
 drum_types = ["kick", "snare", "hi"]
 
 
-class beat_feature(object):
+class BeatFeature(object):
   def __init__(self, time, y, sr):
     self.time = time
     self.y = y
     self.sr = sr
+    self.features ={}
 
   def get_mfcc(self):
-    self.mfcc, self.dmfcc, self.ddmfcc = extract_mfcc(self.y, self.sr)
-    return self.mfcc, self.dmfcc, self.ddmfcc
+    mfcc, dmfcc, ddmfcc = extract_mfcc(self.y, self.sr)
+    self.features['mfcc'] = mfcc
+    self.features['dmfcc'] = dmfcc
+    self.features['ddmfcc'] = ddmfcc
+
+    return mfcc, dmfcc, ddmfcc
 
   def get_mel(self):
-    self.mel = extract_mel(self.y, self.sr)
-    return self.mel
+    mel = extract_mel(self.y, self.sr)
+    self.features['mel'] = mel
+    return mel
 
   def get_zero_crossing(self):
-    self.zero_crossing = extract_zero_crossing(self,y, self.sr, self.mfcc.shape[1])
-    return self.zero_crossing
+    zero_crossing = extract_zero_crossing(self,y, self.sr, self.mfcc.shape[1])
+    self.features['zero_crossing'] = zero_crossing
+    return zero_crossing
 
   def get_spectral_centroid(self):
     sc_mat = librosa.feature.spectral_centroid(self.y, sr=self.sr)
-    self.spectral_centroid = sc_mat
+    self.features['spectral_centroid'] = sc_mat
+    return sc_mat
 
-    return self.spectral_centroid
+  def get_full_features(self, key_list=['mfcc', 'dmfcc', 'ddmfcc' 'mel', 'zero_crossing', 'centroid']):
+    feature_list = []
+    for key in key_list:
+      try:
+        self.features[key].value
+      except:
+        if key in ['mfcc', 'dmfcc', 'ddmfcc']:
+          self.get_mfcc()
+        elif key in ['mel']:
+          self.get_mel()
+        elif key in ['zero_crossing']:
+          self.get_zero_crossing()
+        elif key in ['centroid']:
+          self.get_spectral_centroid()
+      else:
+        feature_list.append(self.features[key].value)
 
-  def extract_features(self, feature_list=['mfcc', 'mel', 'zero_crossing', 'centroid']):
-    features = process_beat(self.y, self.sr, feature_list=feature_list)
-    self.features = features
-    return self.features
+    full_feature = np.concatenate([feature_list], axis=0)
+    return full_feature
 
 
 def save_feature(fn, path, feature):
@@ -58,16 +79,20 @@ def save_feature(fn, path, feature):
 
 
 def extract_mfcc(y, sr):
-  mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=constants.MFCC_DIM)
+  mel = librosa.power_to_db(librosa.feature.melspectrogram(y=y, sr=sr,
+                                                         n_fft=constants.FFT_LEN,
+                                                         hop_length=constants.HOP,
+                                                         win_length=constants.FFT_LEN))
+  mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=constants.MFCC_DIM, S=mel)
   dmfcc = librosa.feature.delta(mfcc)
   ddmfcc = librosa.feature.delta(mfcc, order=2)
   return mfcc, dmfcc, ddmfcc
 
 
 def extract_mel(y, sr):
-  S = librosa.core.stft(y, n_fft=1024, hop_length=512, win_length=1024)
+  S = librosa.core.stft(y, n_fft=constants.FFT_LEN, hop_length=constants.HOP, win_length=constants.FFT_LEN)
   D = np.abs(S) ** 2
-  mel_basis = librosa.filters.mel(sr, 1024, n_mels=constants.MEL_DIM)
+  mel_basis = librosa.filters.mel(sr, constants.FFT_LEN, n_mels=constants.MEL_DIM)
   mel_S = np.dot(mel_basis, D)
   log_mel_S = librosa.power_to_db(mel_S)
   return log_mel_S
@@ -81,29 +106,6 @@ def extract_zero_crossing(y, sr, repeat_length):
   zcrsum = zcrsum.T
 
   return zcrsum
-
-
-def process_beat(y, sr, feature_list=['mfcc', 'mel', 'zero_crossing', 'centroid']):
-  # TODO: better to do it with dicts.
-  full_feature = []
-  if 'mfcc' in feature_list:
-    mfcc, dmfcc, ddmfcc = extract_mfcc(y, sr)
-    full_feature.append(mfcc)
-    full_feature.append(dmfcc)
-    full_feature.append(ddmfcc)
-  if 'mel' in feature_list:
-    mel = extract_mel(y, sr)
-    full_feature.append(mel)
-  if 'zero_crossing' in feature_list:
-    zcrsum = extract_zero_crossing(y, sr, mfcc.shape[1])
-    full_feature.append(zcrsum)
-  if 'centroid' in feature_list:
-    sc_mat = librosa.feature.spectral_centroid(y, sr=sr)
-    full_feature.append(sc_mat)
-
-  full_feature = np.concatenate([full_feature], axis=0)
-
-  return full_feature
 
 
 if __name__ == '__main__':
@@ -120,5 +122,6 @@ if __name__ == '__main__':
 
           y, sr = librosa.load(os.path.join(constants.BEAT_PATH, drum_name, file_name), sr=constants.SR)
 
-          full_feature = process_beat(y, sr)
+          beat_feature = BeatFeature(None, y, sr)
+          full_feature = beat_feature.get_full_features()
           save_feature(drum_name + "_" + file_name, full_path, full_feature)
