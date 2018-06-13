@@ -11,10 +11,9 @@ import pickle
 import random
 from sklearn.externals import joblib
 import argparse
+from sklearn.neural_network import MLPClassifier
 
-FEATURE_PATH = './dataset/features/full'
-SHUFFLE = True
-DATA_UNIT = "ID"  # Unit of the data: subject, note are available.
+
 random.seed(634)
 
 
@@ -54,7 +53,7 @@ def load_data_feature():
     return feature_list, pattern_list, id_list
 
 
-def make_dataset(data_unit=DATA_UNIT, train_ratio=0.6, valid_ratio=0.2):
+def make_dataset(data_unit='ID', train_ratio=0.6, valid_ratio=0.2):
     feature_list, pattern_list, id_list = load_data_feature()
 
     if data_unit == 'Note':
@@ -83,7 +82,7 @@ def make_dataset(data_unit=DATA_UNIT, train_ratio=0.6, valid_ratio=0.2):
 
         train_X , train_Y = select_pattern_sample(feature_list, pattern_list[:int(n_total*train_ratio)])
         valid_X, valid_Y = select_pattern_sample(feature_list, pattern_list[int(n_total*train_ratio): int(n_total*(train_ratio+valid_ratio))])
-        test_X, text_Y = select_pattern_sample(feature_list, pattern_list[int(n_total*(train_ratio+valid_ratio)):, 0])
+        test_X, test_Y = select_pattern_sample(feature_list, pattern_list[int(n_total*(train_ratio+valid_ratio)):])
 
     elif data_unit == 'ID':
         random.shuffle(feature_list)
@@ -102,8 +101,8 @@ def make_dataset(data_unit=DATA_UNIT, train_ratio=0.6, valid_ratio=0.2):
         train_X, train_Y = select_id_sample(feature_list, id_list[:int(n_total * train_ratio)])
         valid_X, valid_Y = select_id_sample(feature_list, id_list[int(n_total * train_ratio): int(
             n_total * (train_ratio + valid_ratio))])
-        test_X, text_Y = select_id_sample(feature_list,
-                                               id_list[int(n_total * (train_ratio + valid_ratio)):, 0])
+        test_X, test_Y = select_id_sample(feature_list,
+                                               id_list[int(n_total * (train_ratio + valid_ratio)):])
     return train_X, train_Y, valid_X, valid_Y, test_X, test_Y
 
 
@@ -115,12 +114,11 @@ if __name__ == '__main__':
 
     train_X, train_Y, valid_X, valid_Y, test_X, test_Y = make_dataset()
 
-    print ("Shuffle: "+str(SHUFFLE)+" Data Unit: "+DATA_UNIT)
+    print ("{}, Data Unit: {}".format(args.name, args.unit))
     print (train_X.shape)
     print (test_X.shape)
     train_X = train_X.T
     test_X = test_X.T
-
 
     scaler = StandardScaler()
     scaler.fit(train_X)
@@ -128,11 +126,9 @@ if __name__ == '__main__':
     scaler_filename = "stat/scaler.save"
     joblib.dump(scaler, scaler_filename)
 
-
     train_X = scaler.transform(train_X)
     test_X = scaler.transform(test_X)
 
-    from sklearn.neural_network import MLPClassifier
 
     mlp = MLPClassifier(hidden_layer_sizes=(10, 20, 10, 30))
     mlp.fit(train_X, train_Y)

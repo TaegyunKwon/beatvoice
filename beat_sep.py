@@ -5,27 +5,10 @@ import librosa
 import madmom
 import numpy as np
 import utils
+import constants
 
 
-BUFFER = 1000
-SR = 44100
-LEAST_GAP = 0.2
-PRE_ONSET = 0.1
-POST_ONSET = 0.3  # sec
-
-SAMPLE_LIST = {}
-
-LABEL = np.array([[0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1]
-                , [0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1]
-                , [0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2]
-                , [0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2, 0, 0, 2, 2]
-                , [0, 1, 1, 1, 2, 1, 1, 1, 0, 1, 1, 1, 2, 1, 1, 1]
-                , [0, 1, 1, 1, 2, 1, 1, 1, 0, 1, 1, 1, 2, 1, 1, 1]
-                , [0, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2]
-                , [0, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2, 0, 2, 1, 2]])
-
-
-def pattern_cut(file_path, times, buffer=BUFFER, verbose=True):
+def pattern_cut(file_path, times, buffer=constants.BUFFER, verbose=True):
     y, sr = librosa.load(file_path, sr=SR)
     beat_time = librosa.time_to_samples(times, sr=SR)
     # 8 patterns
@@ -114,8 +97,8 @@ def sample_cut(file_path, pre_adjust, post_adjust=None, verbose=False):
     labels = []
     for n in range(8):
         name = 'p{:d}.wav'.format(n)
-        y, sr = librosa.core.load(name, sr=SR)
-        beats_index = (librosa.time_to_samples(beat_comb_peakpick(name), sr=SR))
+        y, sr = librosa.core.load(name, sr=constants.SR)
+        beats_index = (librosa.time_to_samples(beat_comb_peakpick(name), sr=constants.SR))
         n_beats = len(beats_index)
         if verbose:
             print('{}_p{:d}_#beat={:d}'.format(file_name, n, n_beats))
@@ -123,21 +106,23 @@ def sample_cut(file_path, pre_adjust, post_adjust=None, verbose=False):
             print('Critical: {}_p{:d}_#beat={:d}'.format(file_name, n, n_beats))
             continue
         elif n_beats < 16:
-            print('Warning: {}_p{:d}_#beat={:d}'.format(file_name, n, n_beats))
+            # print('Warning: {}_p{:d}_#beat={:d}'.format(file_name, n, n_beats))
+            print('Critical: {}_p{:d}_#beat={:d}'.format(file_name, n, n_beats))
+            continue
 
         for m in range(n_beats):
             if m >= 16:
                 break
 
             beat_index = beats_index[m]
-            out = y[int(max(0, beat_index - PRE_ONSET*SR)): int(beat_index + POST_ONSET*SR)]
+            out = y[int(max(0, beat_index - constants.PRE_ONSET*constants.SR)): int(beat_index + constants.POST_ONSET*constants.SR)]
             if m == 0:
-                diff = beat_index - BUFFER
-                if m == 0 and abs(diff) > 0.1 * SR:
-                    print('Large onset diff:{:d}ms {}, p{:d}, beat{:d}'.format(int(diff / SR * 1e3), file_name, n, m))
+                diff = beat_index - constants.BUFFER
+                if m == 0 and abs(diff) > 0.1 * constants.SR:
+                    print('Large onset diff:{:d}ms {}, p{:d}, beat{:d}'.format(int(diff / constants.SR * 1e3), file_name, n, m))
             beats.append(y)
 
-            label = LABEL[n, m]
+            label = constants.LABEL[n, m]
             librosa.output.write_wav(get_beat_sample_path(label, file_name, n, m), out, sr)
             labels.append(label)
 
