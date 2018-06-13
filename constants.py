@@ -19,6 +19,8 @@ LABEL = np.array([[0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1]
 
 MFCC_DIM = 30
 MEL_DIM = 40
+FFT_LEN = 2048
+HOP = 512
 
 FEATURE_PATH = './dataset/features'
 BEAT_PATH = './output/'
