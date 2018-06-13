@@ -7,6 +7,7 @@ from sklearn.externals import joblib
 import pretty_midi
 from final_feature import beat_feature
 
+
 def pick_onset(audio_file, onset_strength_th=4, onset_time_th=0.12):
   y, sr = librosa.load(audio_file)
   onset_samples = librosa.onset.onset_detect(y, sr=sr, units='samples')

@@ -109,9 +109,7 @@ def extract_zero_crossing(y, sr, repeat_length):
   return zcrsum
 
 
-def process_beat(y, sr, t=None):
-  # beat_feature(t, y, sr)
-
+def process_beat(y, sr, ):
   mfcc, dmfcc, ddmfcc = extract_mfcc(y, sr)
 
   mel = extract_mel(y, sr)
@@ -137,9 +135,6 @@ if __name__ == '__main__':
       file_list = [el for el in temp_file_list if el.endswith('.wav')]
 
       c=0
-      #random_tvt=np.random.choice(range(howmany), howmany, replace=False)        #shuffle
-
-      #for name in random_tvt:        #shuffle
       for file_name in file_list:
           c = c + 1
           if not (c % 10):

@@ -75,8 +75,6 @@ def beat_comb_peakpick(file_path):
             m += 1
     loc_beats = loc_beats_new[:m]
 
-
-
     return loc_beats #beat
 
 
