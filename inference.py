@@ -6,6 +6,7 @@ import pickle
 from sklearn.externals import joblib
 import pretty_midi
 from final_feature import beat_feature
+import argparse
 
 
 def pick_onset(audio_file, onset_strength_th=4, onset_time_th=0.12):
@@ -85,17 +86,23 @@ def infer_to_midi(audio_file, model, scaler):
       inst.notes.append(pretty_midi.Note(80, 42, el.time, el.time + 0.2))
     elif prediction == 2:
       inst.notes.append(pretty_midi.Note(80, 40, el.time, el.time + 0.2))
-  midi.write(TEST_FILE.replace('.wav', '.mid'))
+  midi.write(infer_file.replace('.wav', '.mid'))
   return midi
 
 
 if __name__ == '__main__':
-  TEST_FILE = 'Samples/test/wonil.wav'
-  MODEL = 'finalized_model.sav'
-  SCALER = 'stat/scaler.save'
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--infer_file')
+  parser.add_argument('--scaler', default='stat/scaler.save')
+  parser.add_argument('--model', default='finalized_model.sav')
+  args = parser.parse_args()
 
-  onset_post, y, sr = pick_onset(TEST_FILE)
+  infer_file = args.infer_file
+  model = args.model
+  scaler = args.scaler
 
-  model = pickle.load(open(MODEL, 'rb'))
-  scaler = joblib.load(SCALER)
-  infer_to_midi(TEST_FILE, model, scaler)
+  onset_post, y, sr = pick_onset(infer_file)
+
+  model = pickle.load(open(model, 'rb'))
+  scaler = joblib.load(scaler)
+  infer_to_midi(infer_file, model, scaler)
