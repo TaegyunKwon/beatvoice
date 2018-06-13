@@ -12,6 +12,7 @@ import random
 from sklearn.externals import joblib
 import argparse
 from sklearn.neural_network import MLPClassifier
+import constants
 
 
 random.seed(634)
@@ -36,13 +37,13 @@ def parse_name(feature_name):
 
 
 def load_data_feature():
-    file_list = os.listdir(FEATURE_PATH)
+    file_list = os.listdir(constants.FEATURE_PATH)
     feature_list = []
     pattern_list = []
     id_list = []
     for el in file_list:
         id, label, beat_id, pattern_id = parse_name(el)
-        feature_data = np.load(os.path.join(FEATURE_PATH, el))
+        feature_data = np.load(os.path.join(constants.FEATURE_PATH, el))
         feature_list.append((feature_data, id, label, beat_id, pattern_id))
         pattern_list.append('{}_p{}'.format(id, pattern_id))
         id_list.append(id)
